@@ -14,16 +14,252 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      clinics: {
+        Row: {
+          address: string | null
+          city: string | null
+          created_at: string
+          hours: string | null
+          id: string
+          lat: number
+          lng: number
+          name: string
+          phone: string | null
+          region: string | null
+          source: string | null
+          type: string | null
+          updated_at: string
+          verified: boolean
+        }
+        Insert: {
+          address?: string | null
+          city?: string | null
+          created_at?: string
+          hours?: string | null
+          id?: string
+          lat: number
+          lng: number
+          name: string
+          phone?: string | null
+          region?: string | null
+          source?: string | null
+          type?: string | null
+          updated_at?: string
+          verified?: boolean
+        }
+        Update: {
+          address?: string | null
+          city?: string | null
+          created_at?: string
+          hours?: string | null
+          id?: string
+          lat?: number
+          lng?: number
+          name?: string
+          phone?: string | null
+          region?: string | null
+          source?: string | null
+          type?: string | null
+          updated_at?: string
+          verified?: boolean
+        }
+        Relationships: []
+      }
+      cycle_logs: {
+        Row: {
+          created_at: string
+          cycle_length_days: number | null
+          cycle_start_date: string
+          id: string
+          notes: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          cycle_length_days?: number | null
+          cycle_start_date: string
+          id?: string
+          notes?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          cycle_length_days?: number | null
+          cycle_start_date?: string
+          id?: string
+          notes?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      danger_sign_logs: {
+        Row: {
+          acknowledged_at: string | null
+          checked_at: string
+          created_at: string
+          id: string
+          pregnancy_id: string | null
+          signs: Json
+          synced_from_offline: boolean
+          triggered_critical: boolean
+          user_id: string
+        }
+        Insert: {
+          acknowledged_at?: string | null
+          checked_at?: string
+          created_at?: string
+          id?: string
+          pregnancy_id?: string | null
+          signs: Json
+          synced_from_offline?: boolean
+          triggered_critical?: boolean
+          user_id: string
+        }
+        Update: {
+          acknowledged_at?: string | null
+          checked_at?: string
+          created_at?: string
+          id?: string
+          pregnancy_id?: string | null
+          signs?: Json
+          synced_from_offline?: boolean
+          triggered_critical?: boolean
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "danger_sign_logs_pregnancy_id_fkey"
+            columns: ["pregnancy_id"]
+            isOneToOne: false
+            referencedRelation: "pregnancies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      pregnancies: {
+        Row: {
+          active: boolean
+          created_at: string
+          edd_date: string | null
+          id: string
+          lmp_date: string
+          notes: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          edd_date?: string | null
+          id?: string
+          lmp_date: string
+          notes?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          edd_date?: string | null
+          id?: string
+          lmp_date?: string
+          notes?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          display_name: string | null
+          id: string
+          is_adolescent_module: boolean
+          preferred_language: Database["public"]["Enums"]["app_language"]
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          display_name?: string | null
+          id: string
+          is_adolescent_module?: boolean
+          preferred_language?: Database["public"]["Enums"]["app_language"]
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          display_name?: string | null
+          id?: string
+          is_adolescent_module?: boolean
+          preferred_language?: Database["public"]["Enums"]["app_language"]
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      vitals_readings: {
+        Row: {
+          created_at: string
+          id: string
+          pregnancy_id: string | null
+          reading_type: string
+          recorded_at: string
+          source: Database["public"]["Enums"]["vitals_source_enum"]
+          unit: string | null
+          user_id: string
+          value: number
+          verified: boolean
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          pregnancy_id?: string | null
+          reading_type: string
+          recorded_at?: string
+          source?: Database["public"]["Enums"]["vitals_source_enum"]
+          unit?: string | null
+          user_id: string
+          value: number
+          verified?: boolean
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          pregnancy_id?: string | null
+          reading_type?: string
+          recorded_at?: string
+          source?: Database["public"]["Enums"]["vitals_source_enum"]
+          unit?: string | null
+          user_id?: string
+          value?: number
+          verified?: boolean
+        }
+        Relationships: [
+          {
+            foreignKeyName: "vitals_readings_pregnancy_id_fkey"
+            columns: ["pregnancy_id"]
+            isOneToOne: false
+            referencedRelation: "pregnancies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      compute_triggered_critical: { Args: { signs: Json }; Returns: boolean }
+      gestational_week: { Args: { lmp: string }; Returns: number }
+      trimester_for: {
+        Args: { lmp: string }
+        Returns: Database["public"]["Enums"]["trimester_enum"]
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_language: "fr" | "en" | "pcm" | "ff"
+      danger_sign_severity: "critical" | "urgent" | "monitor"
+      trimester_enum: "first" | "second" | "third"
+      vitals_source_enum: "esp32_bridge" | "manual" | "other"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +386,11 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_language: ["fr", "en", "pcm", "ff"],
+      danger_sign_severity: ["critical", "urgent", "monitor"],
+      trimester_enum: ["first", "second", "third"],
+      vitals_source_enum: ["esp32_bridge", "manual", "other"],
+    },
   },
 } as const
