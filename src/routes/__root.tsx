@@ -79,18 +79,21 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "MamaHealth — Maternal health for Cameroon" },
+      { title: "MamaHealth — A private companion for your pregnancy journey" },
       {
         name: "description",
         content:
-          "MamaHealth: pregnancy tracker, WHO danger-sign checker, and nearest clinic finder for mothers and adolescents in Cameroon. Works on low-bandwidth phones.",
+          "MamaHealth is a private, low-bandwidth companion for expecting mothers — pregnancy tracker, WHO danger-sign checker, and nearest clinic finder.",
       },
       { name: "author", content: "MamaHealth" },
-      { property: "og:title", content: "MamaHealth — Maternal health for Cameroon" },
+      {
+        property: "og:title",
+        content: "MamaHealth — A private companion for your pregnancy journey",
+      },
       {
         property: "og:description",
         content:
-          "Track your pregnancy, check danger signs, and find the nearest clinic — designed for Cameroonian mothers and adolescents.",
+          "Track your pregnancy, check WHO danger signs, and find the nearest clinic — designed for low-bandwidth phones.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -101,6 +104,12 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         href: appCss,
       },
       { rel: "icon", href: "/favicon.ico", type: "image/x-icon" },
+      { rel: "preconnect", href: "https://fonts.googleapis.com" },
+      { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
+      {
+        rel: "stylesheet",
+        href: "https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Work+Sans:wght@300;400;500;600;700&display=swap",
+      },
     ],
   }),
   shellComponent: RootShell,
