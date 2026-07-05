@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
@@ -60,9 +60,16 @@ function Dashboard() {
         {isGuest ? <UpgradeGuestForm /> : null}
 
         <section className="rounded-2xl border border-border bg-card p-5">
-          <h2 className="text-base font-semibold">Coming next</h2>
+          <h2 className="text-base font-semibold">Your tools</h2>
+          <ul className="mt-2 space-y-2 text-sm">
+            <li>
+              <Link to="/pregnancy" className="font-medium text-primary underline">
+                Pregnancy tracker →
+              </Link>
+            </li>
+          </ul>
+          <h3 className="mt-4 text-sm font-semibold">Coming next</h3>
           <ul className="mt-2 space-y-1 text-sm text-muted-foreground">
-            <li>• Pregnancy tracker (Step 3)</li>
             <li>• Danger signs checker (Step 4)</li>
             <li>• Nearest clinic finder (Step 5)</li>
           </ul>
