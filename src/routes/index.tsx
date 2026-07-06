@@ -343,7 +343,7 @@ function ClosingCta({ signedIn }: { signedIn: boolean | null }) {
                 variant="secondary"
                 className="rounded-full px-8 text-base"
               >
-                <Link to="/dashboard">Open my dashboard</Link>
+                <Link to="/pregnancy">Start tracking</Link>
               </Button>
             ) : (
               <>
@@ -353,7 +353,9 @@ function ClosingCta({ signedIn }: { signedIn: boolean | null }) {
                   variant="secondary"
                   className="rounded-full px-8 text-base"
                 >
-                  <Link to="/auth">Sign in</Link>
+                  <Link to="/auth" search={{ next: "/pregnancy" }}>
+                    Start tracking
+                  </Link>
                 </Button>
                 <Button
                   asChild
