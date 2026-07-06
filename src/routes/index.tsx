@@ -161,30 +161,38 @@ function Hero({ signedIn }: { signedIn: boolean | null }) {
             </p>
 
             <div className="flex flex-col gap-3 sm:flex-row">
+              <Button
+                asChild
+                size="lg"
+                className="rounded-full px-8 text-base shadow-lg shadow-primary/15"
+              >
+                <Link
+                  to={signedIn ? "/pregnancy" : "/auth"}
+                  search={signedIn ? undefined : { next: "/pregnancy" }}
+                >
+                  Start tracking
+                </Link>
+              </Button>
               {signedIn ? (
-                <Button asChild size="lg" className="rounded-full px-8 text-base shadow-lg shadow-primary/15">
+                <Button
+                  asChild
+                  size="lg"
+                  variant="outline"
+                  className="rounded-full border-2 bg-transparent px-8 text-base"
+                >
                   <Link to="/dashboard">Open my dashboard</Link>
                 </Button>
               ) : (
-                <>
-                  <Button
-                    asChild
-                    size="lg"
-                    className="rounded-full px-8 text-base shadow-lg shadow-primary/15"
-                  >
-                    <Link to="/auth">Sign in</Link>
-                  </Button>
-                  <Button
-                    asChild
-                    size="lg"
-                    variant="outline"
-                    className="rounded-full border-2 bg-transparent px-8 text-base"
-                  >
-                    <Link to="/auth" search={{ next: "/dashboard" }}>
-                      Continue as guest
-                    </Link>
-                  </Button>
-                </>
+                <Button
+                  asChild
+                  size="lg"
+                  variant="outline"
+                  className="rounded-full border-2 bg-transparent px-8 text-base"
+                >
+                  <Link to="/auth" search={{ next: "/dashboard" }}>
+                    Continue as guest
+                  </Link>
+                </Button>
               )}
             </div>
           </div>
