@@ -16,6 +16,7 @@ import { Route as AuthenticatedPregnancyRouteImport } from './routes/_authentica
 import { Route as AuthenticatedOnboardingRouteImport } from './routes/_authenticated/onboarding'
 import { Route as AuthenticatedGirlsRouteImport } from './routes/_authenticated/girls'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
+import { Route as AuthenticatedGirlsIndexRouteImport } from './routes/_authenticated/girls.index'
 
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
@@ -51,22 +52,28 @@ const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
   path: '/dashboard',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedGirlsIndexRoute = AuthenticatedGirlsIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AuthenticatedGirlsRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
-  '/girls': typeof AuthenticatedGirlsRoute
+  '/girls': typeof AuthenticatedGirlsRouteWithChildren
   '/onboarding': typeof AuthenticatedOnboardingRoute
   '/pregnancy': typeof AuthenticatedPregnancyRoute
+  '/girls/': typeof AuthenticatedGirlsIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
-  '/girls': typeof AuthenticatedGirlsRoute
   '/onboarding': typeof AuthenticatedOnboardingRoute
   '/pregnancy': typeof AuthenticatedPregnancyRoute
+  '/girls': typeof AuthenticatedGirlsIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -74,9 +81,10 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
-  '/_authenticated/girls': typeof AuthenticatedGirlsRoute
+  '/_authenticated/girls': typeof AuthenticatedGirlsRouteWithChildren
   '/_authenticated/onboarding': typeof AuthenticatedOnboardingRoute
   '/_authenticated/pregnancy': typeof AuthenticatedPregnancyRoute
+  '/_authenticated/girls/': typeof AuthenticatedGirlsIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -87,8 +95,9 @@ export interface FileRouteTypes {
     | '/girls'
     | '/onboarding'
     | '/pregnancy'
+    | '/girls/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/auth' | '/dashboard' | '/girls' | '/onboarding' | '/pregnancy'
+  to: '/' | '/auth' | '/dashboard' | '/onboarding' | '/pregnancy' | '/girls'
   id:
     | '__root__'
     | '/'
@@ -98,6 +107,7 @@ export interface FileRouteTypes {
     | '/_authenticated/girls'
     | '/_authenticated/onboarding'
     | '/_authenticated/pregnancy'
+    | '/_authenticated/girls/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -157,19 +167,37 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedDashboardRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/girls/': {
+      id: '/_authenticated/girls/'
+      path: '/'
+      fullPath: '/girls/'
+      preLoaderRoute: typeof AuthenticatedGirlsIndexRouteImport
+      parentRoute: typeof AuthenticatedGirlsRoute
+    }
   }
 }
 
+interface AuthenticatedGirlsRouteChildren {
+  AuthenticatedGirlsIndexRoute: typeof AuthenticatedGirlsIndexRoute
+}
+
+const AuthenticatedGirlsRouteChildren: AuthenticatedGirlsRouteChildren = {
+  AuthenticatedGirlsIndexRoute: AuthenticatedGirlsIndexRoute,
+}
+
+const AuthenticatedGirlsRouteWithChildren =
+  AuthenticatedGirlsRoute._addFileChildren(AuthenticatedGirlsRouteChildren)
+
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
-  AuthenticatedGirlsRoute: typeof AuthenticatedGirlsRoute
+  AuthenticatedGirlsRoute: typeof AuthenticatedGirlsRouteWithChildren
   AuthenticatedOnboardingRoute: typeof AuthenticatedOnboardingRoute
   AuthenticatedPregnancyRoute: typeof AuthenticatedPregnancyRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
-  AuthenticatedGirlsRoute: AuthenticatedGirlsRoute,
+  AuthenticatedGirlsRoute: AuthenticatedGirlsRouteWithChildren,
   AuthenticatedOnboardingRoute: AuthenticatedOnboardingRoute,
   AuthenticatedPregnancyRoute: AuthenticatedPregnancyRoute,
 }
