@@ -18,6 +18,7 @@ import { Route as AuthenticatedGirlsRouteImport } from './routes/_authenticated/
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedGirlsIndexRouteImport } from './routes/_authenticated/girls.index'
 import { Route as AuthenticatedGirlsLearnRouteImport } from './routes/_authenticated/girls.learn'
+import { Route as AuthenticatedGirlsHelpRouteImport } from './routes/_authenticated/girls.help'
 import { Route as AuthenticatedGirlsCheckRouteImport } from './routes/_authenticated/girls.check'
 
 const AuthRoute = AuthRouteImport.update({
@@ -64,6 +65,11 @@ const AuthenticatedGirlsLearnRoute = AuthenticatedGirlsLearnRouteImport.update({
   path: '/learn',
   getParentRoute: () => AuthenticatedGirlsRoute,
 } as any)
+const AuthenticatedGirlsHelpRoute = AuthenticatedGirlsHelpRouteImport.update({
+  id: '/help',
+  path: '/help',
+  getParentRoute: () => AuthenticatedGirlsRoute,
+} as any)
 const AuthenticatedGirlsCheckRoute = AuthenticatedGirlsCheckRouteImport.update({
   id: '/check',
   path: '/check',
@@ -78,6 +84,7 @@ export interface FileRoutesByFullPath {
   '/onboarding': typeof AuthenticatedOnboardingRoute
   '/pregnancy': typeof AuthenticatedPregnancyRoute
   '/girls/check': typeof AuthenticatedGirlsCheckRoute
+  '/girls/help': typeof AuthenticatedGirlsHelpRoute
   '/girls/learn': typeof AuthenticatedGirlsLearnRoute
   '/girls/': typeof AuthenticatedGirlsIndexRoute
 }
@@ -88,6 +95,7 @@ export interface FileRoutesByTo {
   '/onboarding': typeof AuthenticatedOnboardingRoute
   '/pregnancy': typeof AuthenticatedPregnancyRoute
   '/girls/check': typeof AuthenticatedGirlsCheckRoute
+  '/girls/help': typeof AuthenticatedGirlsHelpRoute
   '/girls/learn': typeof AuthenticatedGirlsLearnRoute
   '/girls': typeof AuthenticatedGirlsIndexRoute
 }
@@ -101,6 +109,7 @@ export interface FileRoutesById {
   '/_authenticated/onboarding': typeof AuthenticatedOnboardingRoute
   '/_authenticated/pregnancy': typeof AuthenticatedPregnancyRoute
   '/_authenticated/girls/check': typeof AuthenticatedGirlsCheckRoute
+  '/_authenticated/girls/help': typeof AuthenticatedGirlsHelpRoute
   '/_authenticated/girls/learn': typeof AuthenticatedGirlsLearnRoute
   '/_authenticated/girls/': typeof AuthenticatedGirlsIndexRoute
 }
@@ -114,6 +123,7 @@ export interface FileRouteTypes {
     | '/onboarding'
     | '/pregnancy'
     | '/girls/check'
+    | '/girls/help'
     | '/girls/learn'
     | '/girls/'
   fileRoutesByTo: FileRoutesByTo
@@ -124,6 +134,7 @@ export interface FileRouteTypes {
     | '/onboarding'
     | '/pregnancy'
     | '/girls/check'
+    | '/girls/help'
     | '/girls/learn'
     | '/girls'
   id:
@@ -136,6 +147,7 @@ export interface FileRouteTypes {
     | '/_authenticated/onboarding'
     | '/_authenticated/pregnancy'
     | '/_authenticated/girls/check'
+    | '/_authenticated/girls/help'
     | '/_authenticated/girls/learn'
     | '/_authenticated/girls/'
   fileRoutesById: FileRoutesById
@@ -211,6 +223,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedGirlsLearnRouteImport
       parentRoute: typeof AuthenticatedGirlsRoute
     }
+    '/_authenticated/girls/help': {
+      id: '/_authenticated/girls/help'
+      path: '/help'
+      fullPath: '/girls/help'
+      preLoaderRoute: typeof AuthenticatedGirlsHelpRouteImport
+      parentRoute: typeof AuthenticatedGirlsRoute
+    }
     '/_authenticated/girls/check': {
       id: '/_authenticated/girls/check'
       path: '/check'
@@ -223,12 +242,14 @@ declare module '@tanstack/react-router' {
 
 interface AuthenticatedGirlsRouteChildren {
   AuthenticatedGirlsCheckRoute: typeof AuthenticatedGirlsCheckRoute
+  AuthenticatedGirlsHelpRoute: typeof AuthenticatedGirlsHelpRoute
   AuthenticatedGirlsLearnRoute: typeof AuthenticatedGirlsLearnRoute
   AuthenticatedGirlsIndexRoute: typeof AuthenticatedGirlsIndexRoute
 }
 
 const AuthenticatedGirlsRouteChildren: AuthenticatedGirlsRouteChildren = {
   AuthenticatedGirlsCheckRoute: AuthenticatedGirlsCheckRoute,
+  AuthenticatedGirlsHelpRoute: AuthenticatedGirlsHelpRoute,
   AuthenticatedGirlsLearnRoute: AuthenticatedGirlsLearnRoute,
   AuthenticatedGirlsIndexRoute: AuthenticatedGirlsIndexRoute,
 }
