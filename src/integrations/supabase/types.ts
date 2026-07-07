@@ -14,6 +14,36 @@ export type Database = {
   }
   public: {
     Tables: {
+      claim_checks_girls: {
+        Row: {
+          claim_text: string
+          confident: boolean
+          created_at: string
+          explanation: string | null
+          id: string
+          user_id: string
+          verdict: string | null
+        }
+        Insert: {
+          claim_text: string
+          confident?: boolean
+          created_at?: string
+          explanation?: string | null
+          id?: string
+          user_id: string
+          verdict?: string | null
+        }
+        Update: {
+          claim_text?: string
+          confident?: boolean
+          created_at?: string
+          explanation?: string | null
+          id?: string
+          user_id?: string
+          verdict?: string | null
+        }
+        Relationships: []
+      }
       clinics: {
         Row: {
           address: string | null
@@ -136,6 +166,114 @@ export type Database = {
           },
         ]
       }
+      girls_content: {
+        Row: {
+          body_md: string
+          created_at: string
+          id: string
+          language: Database["public"]["Enums"]["app_language"]
+          slug: string
+          sort_order: number
+          title: string
+          topic: string
+          updated_at: string
+        }
+        Insert: {
+          body_md: string
+          created_at?: string
+          id?: string
+          language: Database["public"]["Enums"]["app_language"]
+          slug: string
+          sort_order?: number
+          title: string
+          topic: string
+          updated_at?: string
+        }
+        Update: {
+          body_md?: string
+          created_at?: string
+          id?: string
+          language?: Database["public"]["Enums"]["app_language"]
+          slug?: string
+          sort_order?: number
+          title?: string
+          topic?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      girls_myths: {
+        Row: {
+          claim: string
+          created_at: string
+          explanation: string
+          id: string
+          keywords: string[]
+          language: Database["public"]["Enums"]["app_language"]
+          verdict: string
+        }
+        Insert: {
+          claim: string
+          created_at?: string
+          explanation: string
+          id?: string
+          keywords?: string[]
+          language: Database["public"]["Enums"]["app_language"]
+          verdict: string
+        }
+        Update: {
+          claim?: string
+          created_at?: string
+          explanation?: string
+          id?: string
+          keywords?: string[]
+          language?: Database["public"]["Enums"]["app_language"]
+          verdict?: string
+        }
+        Relationships: []
+      }
+      help_resources: {
+        Row: {
+          category: string
+          country: string | null
+          created_at: string
+          id: string
+          language: Database["public"]["Enums"]["app_language"]
+          name: string
+          notes: string | null
+          phone: string | null
+          region: string | null
+          sort_order: number
+          url: string | null
+        }
+        Insert: {
+          category: string
+          country?: string | null
+          created_at?: string
+          id?: string
+          language: Database["public"]["Enums"]["app_language"]
+          name: string
+          notes?: string | null
+          phone?: string | null
+          region?: string | null
+          sort_order?: number
+          url?: string | null
+        }
+        Update: {
+          category?: string
+          country?: string | null
+          created_at?: string
+          id?: string
+          language?: Database["public"]["Enums"]["app_language"]
+          name?: string
+          notes?: string | null
+          phone?: string | null
+          region?: string | null
+          sort_order?: number
+          url?: string | null
+        }
+        Relationships: []
+      }
       pregnancies: {
         Row: {
           active: boolean
@@ -175,7 +313,9 @@ export type Database = {
           display_name: string | null
           id: string
           is_adolescent_module: boolean
+          onboarded: boolean
           preferred_language: Database["public"]["Enums"]["app_language"]
+          track: Database["public"]["Enums"]["app_track"] | null
           updated_at: string
         }
         Insert: {
@@ -183,7 +323,9 @@ export type Database = {
           display_name?: string | null
           id: string
           is_adolescent_module?: boolean
+          onboarded?: boolean
           preferred_language?: Database["public"]["Enums"]["app_language"]
+          track?: Database["public"]["Enums"]["app_track"] | null
           updated_at?: string
         }
         Update: {
@@ -191,7 +333,9 @@ export type Database = {
           display_name?: string | null
           id?: string
           is_adolescent_module?: boolean
+          onboarded?: boolean
           preferred_language?: Database["public"]["Enums"]["app_language"]
+          track?: Database["public"]["Enums"]["app_track"] | null
           updated_at?: string
         }
         Relationships: []
@@ -254,9 +398,14 @@ export type Database = {
         Args: { lmp: string }
         Returns: Database["public"]["Enums"]["trimester_enum"]
       }
+      user_track: {
+        Args: { _uid: string }
+        Returns: Database["public"]["Enums"]["app_track"]
+      }
     }
     Enums: {
       app_language: "fr" | "en" | "pcm" | "ff"
+      app_track: "pregnant" | "girls"
       danger_sign_severity: "critical" | "urgent" | "monitor"
       trimester_enum: "first" | "second" | "third"
       vitals_source_enum: "esp32_bridge" | "manual" | "other"
@@ -388,6 +537,7 @@ export const Constants = {
   public: {
     Enums: {
       app_language: ["fr", "en", "pcm", "ff"],
+      app_track: ["pregnant", "girls"],
       danger_sign_severity: ["critical", "urgent", "monitor"],
       trimester_enum: ["first", "second", "third"],
       vitals_source_enum: ["esp32_bridge", "manual", "other"],

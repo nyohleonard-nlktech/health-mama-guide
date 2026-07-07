@@ -20,9 +20,21 @@ export const Route = createFileRoute("/")({
 
 function Index() {
   const [signedIn, setSignedIn] = useState<boolean | null>(null);
+  const [track, setTrack] = useState<"pregnant" | "girls" | null>(null);
 
   useEffect(() => {
-    supabase.auth.getUser().then(({ data }) => setSignedIn(!!data.user));
+    (async () => {
+      const { data } = await supabase.auth.getUser();
+      setSignedIn(!!data.user);
+      if (data.user) {
+        const { data: p } = await supabase
+          .from("profiles")
+          .select("track")
+          .eq("id", data.user.id)
+          .maybeSingle();
+        setTrack((p?.track as "pregnant" | "girls" | null) ?? null);
+      }
+    })();
   }, []);
 
   // Lightweight reveal-on-scroll: applies data-inview=true to any element
@@ -47,11 +59,12 @@ function Index() {
   return (
     <div className="min-h-screen bg-canvas text-foreground">
       <Nav signedIn={signedIn} />
-      <Hero signedIn={signedIn} />
+      <Hero signedIn={signedIn} track={track} />
       <WaveDivider />
       <Features />
+      <TwoTracks />
       <Differentiators />
-      <ClosingCta signedIn={signedIn} />
+      <ClosingCta signedIn={signedIn} track={track} />
       <Footer />
     </div>
   );
@@ -91,7 +104,15 @@ function LogoMark() {
   );
 }
 
-function Hero({ signedIn }: { signedIn: boolean | null }) {
+function Hero({
+  signedIn,
+  track,
+}: {
+  signedIn: boolean | null;
+  track: "pregnant" | "girls" | null;
+}) {
+  const primaryTo = signedIn ? (track === "girls" ? "/girls" : "/pregnancy") : "/auth";
+  const primaryLabel = signedIn && track === "girls" ? "Open Girls hub" : "Start tracking";
   return (
     <section className="mx-auto w-full max-w-7xl px-4 py-8 md:px-8 md:py-14">
       <div className="grid overflow-hidden rounded-[2rem] bg-card shadow-xl shadow-primary/5 ring-1 ring-border md:rounded-[2.5rem] lg:grid-cols-2">
@@ -167,10 +188,10 @@ function Hero({ signedIn }: { signedIn: boolean | null }) {
                 className="rounded-full px-8 text-base shadow-lg shadow-primary/15"
               >
                 <Link
-                  to={signedIn ? "/pregnancy" : "/auth"}
-                  search={signedIn ? undefined : { next: "/pregnancy" }}
+                  to={primaryTo}
+                  search={signedIn ? undefined : { next: "/onboarding" }}
                 >
-                  Start tracking
+                  {primaryLabel}
                 </Link>
               </Button>
               {signedIn ? (
@@ -189,7 +210,7 @@ function Hero({ signedIn }: { signedIn: boolean | null }) {
                   variant="outline"
                   className="rounded-full border-2 bg-transparent px-8 text-base"
                 >
-                  <Link to="/auth" search={{ next: "/dashboard" }}>
+                  <Link to="/auth" search={{ next: "/onboarding" }}>
                     Continue as guest
                   </Link>
                 </Button>
@@ -320,7 +341,15 @@ function Differentiators() {
   );
 }
 
-function ClosingCta({ signedIn }: { signedIn: boolean | null }) {
+function ClosingCta({
+  signedIn,
+  track,
+}: {
+  signedIn: boolean | null;
+  track: "pregnant" | "girls" | null;
+}) {
+  const primaryTo = signedIn ? (track === "girls" ? "/girls" : "/pregnancy") : "/auth";
+  const primaryLabel = signedIn && track === "girls" ? "Open Girls hub" : "Start tracking";
   return (
     <section className="mx-auto w-full max-w-7xl px-4 pb-16 md:px-8 md:pb-24">
       <div className="reveal relative overflow-hidden rounded-[2rem] bg-primary p-8 text-primary-foreground shadow-xl md:rounded-[2.5rem] md:p-16">
@@ -343,7 +372,7 @@ function ClosingCta({ signedIn }: { signedIn: boolean | null }) {
                 variant="secondary"
                 className="rounded-full px-8 text-base"
               >
-                <Link to="/pregnancy">Start tracking</Link>
+                <Link to={primaryTo}>{primaryLabel}</Link>
               </Button>
             ) : (
               <>
@@ -353,7 +382,7 @@ function ClosingCta({ signedIn }: { signedIn: boolean | null }) {
                   variant="secondary"
                   className="rounded-full px-8 text-base"
                 >
-                  <Link to="/auth" search={{ next: "/pregnancy" }}>
+                  <Link to="/auth" search={{ next: "/onboarding" }}>
                     Start tracking
                   </Link>
                 </Button>
@@ -363,13 +392,46 @@ function ClosingCta({ signedIn }: { signedIn: boolean | null }) {
                   variant="outline"
                   className="rounded-full border-2 border-primary-foreground/60 bg-transparent px-8 text-base text-primary-foreground hover:bg-primary-foreground/10 hover:text-primary-foreground"
                 >
-                  <Link to="/auth" search={{ next: "/dashboard" }}>
+                  <Link to="/auth" search={{ next: "/onboarding" }}>
                     Continue as guest
                   </Link>
                 </Button>
               </>
             )}
           </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function TwoTracks() {
+  return (
+    <section className="mx-auto w-full max-w-7xl px-4 pb-4 md:px-8 md:pb-8">
+      <div className="reveal grid gap-4 md:grid-cols-2">
+        <div className="rounded-3xl border border-border bg-card p-7">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-accent">
+            For pregnant women
+          </p>
+          <h3 className="mt-2 font-serif text-2xl text-primary">
+            The Pregnancy track
+          </h3>
+          <p className="mt-3 text-sm text-muted-foreground">
+            Track your gestational week, run a WHO danger-signs check, and find
+            nearby clinics.
+          </p>
+        </div>
+        <div className="rounded-3xl border border-border bg-card p-7">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-accent">
+            For girls &amp; young women
+          </p>
+          <h3 className="mt-2 font-serif text-2xl text-primary">
+            The Girls track
+          </h3>
+          <p className="mt-3 text-sm text-muted-foreground">
+            Learn about puberty and reproductive health, check claims, and find
+            real help — in French, English, Pidgin, and Fulfulde.
+          </p>
         </div>
       </div>
     </section>
