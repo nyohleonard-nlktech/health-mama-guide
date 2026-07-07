@@ -17,6 +17,7 @@ import { Route as AuthenticatedOnboardingRouteImport } from './routes/_authentic
 import { Route as AuthenticatedGirlsRouteImport } from './routes/_authenticated/girls'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedGirlsIndexRouteImport } from './routes/_authenticated/girls.index'
+import { Route as AuthenticatedGirlsLearnRouteImport } from './routes/_authenticated/girls.learn'
 
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
@@ -57,6 +58,11 @@ const AuthenticatedGirlsIndexRoute = AuthenticatedGirlsIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AuthenticatedGirlsRoute,
 } as any)
+const AuthenticatedGirlsLearnRoute = AuthenticatedGirlsLearnRouteImport.update({
+  id: '/learn',
+  path: '/learn',
+  getParentRoute: () => AuthenticatedGirlsRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -65,6 +71,7 @@ export interface FileRoutesByFullPath {
   '/girls': typeof AuthenticatedGirlsRouteWithChildren
   '/onboarding': typeof AuthenticatedOnboardingRoute
   '/pregnancy': typeof AuthenticatedPregnancyRoute
+  '/girls/learn': typeof AuthenticatedGirlsLearnRoute
   '/girls/': typeof AuthenticatedGirlsIndexRoute
 }
 export interface FileRoutesByTo {
@@ -73,6 +80,7 @@ export interface FileRoutesByTo {
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/onboarding': typeof AuthenticatedOnboardingRoute
   '/pregnancy': typeof AuthenticatedPregnancyRoute
+  '/girls/learn': typeof AuthenticatedGirlsLearnRoute
   '/girls': typeof AuthenticatedGirlsIndexRoute
 }
 export interface FileRoutesById {
@@ -84,6 +92,7 @@ export interface FileRoutesById {
   '/_authenticated/girls': typeof AuthenticatedGirlsRouteWithChildren
   '/_authenticated/onboarding': typeof AuthenticatedOnboardingRoute
   '/_authenticated/pregnancy': typeof AuthenticatedPregnancyRoute
+  '/_authenticated/girls/learn': typeof AuthenticatedGirlsLearnRoute
   '/_authenticated/girls/': typeof AuthenticatedGirlsIndexRoute
 }
 export interface FileRouteTypes {
@@ -95,9 +104,17 @@ export interface FileRouteTypes {
     | '/girls'
     | '/onboarding'
     | '/pregnancy'
+    | '/girls/learn'
     | '/girls/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/auth' | '/dashboard' | '/onboarding' | '/pregnancy' | '/girls'
+  to:
+    | '/'
+    | '/auth'
+    | '/dashboard'
+    | '/onboarding'
+    | '/pregnancy'
+    | '/girls/learn'
+    | '/girls'
   id:
     | '__root__'
     | '/'
@@ -107,6 +124,7 @@ export interface FileRouteTypes {
     | '/_authenticated/girls'
     | '/_authenticated/onboarding'
     | '/_authenticated/pregnancy'
+    | '/_authenticated/girls/learn'
     | '/_authenticated/girls/'
   fileRoutesById: FileRoutesById
 }
@@ -174,14 +192,23 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedGirlsIndexRouteImport
       parentRoute: typeof AuthenticatedGirlsRoute
     }
+    '/_authenticated/girls/learn': {
+      id: '/_authenticated/girls/learn'
+      path: '/learn'
+      fullPath: '/girls/learn'
+      preLoaderRoute: typeof AuthenticatedGirlsLearnRouteImport
+      parentRoute: typeof AuthenticatedGirlsRoute
+    }
   }
 }
 
 interface AuthenticatedGirlsRouteChildren {
+  AuthenticatedGirlsLearnRoute: typeof AuthenticatedGirlsLearnRoute
   AuthenticatedGirlsIndexRoute: typeof AuthenticatedGirlsIndexRoute
 }
 
 const AuthenticatedGirlsRouteChildren: AuthenticatedGirlsRouteChildren = {
+  AuthenticatedGirlsLearnRoute: AuthenticatedGirlsLearnRoute,
   AuthenticatedGirlsIndexRoute: AuthenticatedGirlsIndexRoute,
 }
 
