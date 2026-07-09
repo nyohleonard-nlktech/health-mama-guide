@@ -54,12 +54,15 @@ export type Database = {
           lat: number
           lng: number
           name: string
+          notes: string | null
           phone: string | null
           region: string | null
+          services: string[]
           source: string | null
           type: string | null
           updated_at: string
           verified: boolean
+          whatsapp: string | null
         }
         Insert: {
           address?: string | null
@@ -70,12 +73,15 @@ export type Database = {
           lat: number
           lng: number
           name: string
+          notes?: string | null
           phone?: string | null
           region?: string | null
+          services?: string[]
           source?: string | null
           type?: string | null
           updated_at?: string
           verified?: boolean
+          whatsapp?: string | null
         }
         Update: {
           address?: string | null
@@ -86,12 +92,15 @@ export type Database = {
           lat?: number
           lng?: number
           name?: string
+          notes?: string | null
           phone?: string | null
           region?: string | null
+          services?: string[]
           source?: string | null
           type?: string | null
           updated_at?: string
           verified?: boolean
+          whatsapp?: string | null
         }
         Relationships: []
       }
@@ -165,6 +174,129 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      faq_girls: {
+        Row: {
+          created_at: string
+          danger_sign_flag: boolean
+          embedding: string | null
+          id: string
+          local_referral: string | null
+          question_variants: string[]
+          slug: string
+          translations: Json
+          translations_reviewed: Json
+          updated_at: string
+          verified_answer_en: string
+          who_source: string
+        }
+        Insert: {
+          created_at?: string
+          danger_sign_flag?: boolean
+          embedding?: string | null
+          id?: string
+          local_referral?: string | null
+          question_variants: string[]
+          slug: string
+          translations?: Json
+          translations_reviewed?: Json
+          updated_at?: string
+          verified_answer_en: string
+          who_source: string
+        }
+        Update: {
+          created_at?: string
+          danger_sign_flag?: boolean
+          embedding?: string | null
+          id?: string
+          local_referral?: string | null
+          question_variants?: string[]
+          slug?: string
+          translations?: Json
+          translations_reviewed?: Json
+          updated_at?: string
+          verified_answer_en?: string
+          who_source?: string
+        }
+        Relationships: []
+      }
+      faq_pregnancy: {
+        Row: {
+          created_at: string
+          danger_sign_flag: boolean
+          embedding: string | null
+          id: string
+          local_referral: string | null
+          question_variants: string[]
+          slug: string
+          translations: Json
+          translations_reviewed: Json
+          updated_at: string
+          verified_answer_en: string
+          who_source: string
+        }
+        Insert: {
+          created_at?: string
+          danger_sign_flag?: boolean
+          embedding?: string | null
+          id?: string
+          local_referral?: string | null
+          question_variants: string[]
+          slug: string
+          translations?: Json
+          translations_reviewed?: Json
+          updated_at?: string
+          verified_answer_en: string
+          who_source: string
+        }
+        Update: {
+          created_at?: string
+          danger_sign_flag?: boolean
+          embedding?: string | null
+          id?: string
+          local_referral?: string | null
+          question_variants?: string[]
+          slug?: string
+          translations?: Json
+          translations_reviewed?: Json
+          updated_at?: string
+          verified_answer_en?: string
+          who_source?: string
+        }
+        Relationships: []
+      }
+      faq_unanswered: {
+        Row: {
+          corpus: string
+          created_at: string
+          id: string
+          language: Database["public"]["Enums"]["app_language"]
+          question_text: string
+          top_match_slug: string | null
+          top_score: number | null
+          user_id: string | null
+        }
+        Insert: {
+          corpus: string
+          created_at?: string
+          id?: string
+          language?: Database["public"]["Enums"]["app_language"]
+          question_text: string
+          top_match_slug?: string | null
+          top_score?: number | null
+          user_id?: string | null
+        }
+        Update: {
+          corpus?: string
+          created_at?: string
+          id?: string
+          language?: Database["public"]["Enums"]["app_language"]
+          question_text?: string
+          top_match_slug?: string | null
+          top_score?: number | null
+          user_id?: string | null
+        }
+        Relationships: []
       }
       girls_content: {
         Row: {
@@ -394,6 +526,32 @@ export type Database = {
     Functions: {
       compute_triggered_critical: { Args: { signs: Json }; Returns: boolean }
       gestational_week: { Args: { lmp: string }; Returns: number }
+      match_faq_girls: {
+        Args: { query_embedding: string }
+        Returns: {
+          danger_sign_flag: boolean
+          local_referral: string
+          similarity: number
+          slug: string
+          translations: Json
+          translations_reviewed: Json
+          verified_answer_en: string
+          who_source: string
+        }[]
+      }
+      match_faq_pregnancy: {
+        Args: { query_embedding: string }
+        Returns: {
+          danger_sign_flag: boolean
+          local_referral: string
+          similarity: number
+          slug: string
+          translations: Json
+          translations_reviewed: Json
+          verified_answer_en: string
+          who_source: string
+        }[]
+      }
       trimester_for: {
         Args: { lmp: string }
         Returns: Database["public"]["Enums"]["trimester_enum"]
