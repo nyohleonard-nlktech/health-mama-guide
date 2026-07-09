@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { BookOpen, ShieldCheck, LifeBuoy, ArrowRight } from "lucide-react";
+import { BookOpen, ShieldCheck, LifeBuoy, ArrowRight, HelpCircle, MapPin } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/girls/")({
   head: () => ({
@@ -54,6 +54,18 @@ function GirlsHub() {
             body="Heard a rumor? Type it in — we say what we know, and admit when we don't."
           />
           <HubCard
+            to="/girls/ask"
+            icon={<HelpCircle className="h-5 w-5" />}
+            title="Ask a question"
+            body="Type any question — we answer only from a reviewed library."
+          />
+          <HubCard
+            to="/clinics"
+            icon={<MapPin className="h-5 w-5" />}
+            title="Find a clinic"
+            body="Verified clinics across Cameroon with services and contact."
+          />
+          <HubCard
             to="/girls/help"
             icon={<LifeBuoy className="h-5 w-5" />}
             title="Get Help"
@@ -73,7 +85,7 @@ function HubCard({
   body,
   wide,
 }: {
-  to: "/girls/learn" | "/girls/check" | "/girls/help";
+  to: "/girls/learn" | "/girls/check" | "/girls/help" | "/girls/ask" | "/clinics";
   icon: React.ReactNode;
   title: string;
   body: string;
