@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { HelpCircle, MapPin } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/pregnancy")({
   head: () => ({
@@ -185,6 +186,33 @@ function PregnancyPage() {
             Return to dashboard
           </Link>
         </p>
+
+        <section className="grid gap-3 sm:grid-cols-2">
+          <Link
+            to="/pregnancy/ask"
+            className="flex items-center gap-3 rounded-2xl border border-border bg-card p-4 transition-colors hover:bg-secondary/40"
+          >
+            <HelpCircle className="h-5 w-5 text-primary" />
+            <div>
+              <p className="font-semibold">Ask a question</p>
+              <p className="text-xs text-muted-foreground">
+                Verified answers from WHO & MoH guidance.
+              </p>
+            </div>
+          </Link>
+          <Link
+            to="/clinics"
+            className="flex items-center gap-3 rounded-2xl border border-border bg-card p-4 transition-colors hover:bg-secondary/40"
+          >
+            <MapPin className="h-5 w-5 text-primary" />
+            <div>
+              <p className="font-semibold">Find a clinic</p>
+              <p className="text-xs text-muted-foreground">
+                Search verified clinics across Cameroon.
+              </p>
+            </div>
+          </Link>
+        </section>
       </main>
     </div>
   );

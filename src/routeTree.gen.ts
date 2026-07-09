@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as ClinicsRouteImport } from './routes/clinics'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
@@ -17,10 +18,17 @@ import { Route as AuthenticatedOnboardingRouteImport } from './routes/_authentic
 import { Route as AuthenticatedGirlsRouteImport } from './routes/_authenticated/girls'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedGirlsIndexRouteImport } from './routes/_authenticated/girls.index'
+import { Route as AuthenticatedPregnancyAskRouteImport } from './routes/_authenticated/pregnancy.ask'
 import { Route as AuthenticatedGirlsLearnRouteImport } from './routes/_authenticated/girls.learn'
 import { Route as AuthenticatedGirlsHelpRouteImport } from './routes/_authenticated/girls.help'
 import { Route as AuthenticatedGirlsCheckRouteImport } from './routes/_authenticated/girls.check'
+import { Route as AuthenticatedGirlsAskRouteImport } from './routes/_authenticated/girls.ask'
 
+const ClinicsRoute = ClinicsRouteImport.update({
+  id: '/clinics',
+  path: '/clinics',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
   path: '/auth',
@@ -60,6 +68,12 @@ const AuthenticatedGirlsIndexRoute = AuthenticatedGirlsIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AuthenticatedGirlsRoute,
 } as any)
+const AuthenticatedPregnancyAskRoute =
+  AuthenticatedPregnancyAskRouteImport.update({
+    id: '/ask',
+    path: '/ask',
+    getParentRoute: () => AuthenticatedPregnancyRoute,
+  } as any)
 const AuthenticatedGirlsLearnRoute = AuthenticatedGirlsLearnRouteImport.update({
   id: '/learn',
   path: '/learn',
@@ -75,28 +89,39 @@ const AuthenticatedGirlsCheckRoute = AuthenticatedGirlsCheckRouteImport.update({
   path: '/check',
   getParentRoute: () => AuthenticatedGirlsRoute,
 } as any)
+const AuthenticatedGirlsAskRoute = AuthenticatedGirlsAskRouteImport.update({
+  id: '/ask',
+  path: '/ask',
+  getParentRoute: () => AuthenticatedGirlsRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/clinics': typeof ClinicsRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/girls': typeof AuthenticatedGirlsRouteWithChildren
   '/onboarding': typeof AuthenticatedOnboardingRoute
-  '/pregnancy': typeof AuthenticatedPregnancyRoute
+  '/pregnancy': typeof AuthenticatedPregnancyRouteWithChildren
+  '/girls/ask': typeof AuthenticatedGirlsAskRoute
   '/girls/check': typeof AuthenticatedGirlsCheckRoute
   '/girls/help': typeof AuthenticatedGirlsHelpRoute
   '/girls/learn': typeof AuthenticatedGirlsLearnRoute
+  '/pregnancy/ask': typeof AuthenticatedPregnancyAskRoute
   '/girls/': typeof AuthenticatedGirlsIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/clinics': typeof ClinicsRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/onboarding': typeof AuthenticatedOnboardingRoute
-  '/pregnancy': typeof AuthenticatedPregnancyRoute
+  '/pregnancy': typeof AuthenticatedPregnancyRouteWithChildren
+  '/girls/ask': typeof AuthenticatedGirlsAskRoute
   '/girls/check': typeof AuthenticatedGirlsCheckRoute
   '/girls/help': typeof AuthenticatedGirlsHelpRoute
   '/girls/learn': typeof AuthenticatedGirlsLearnRoute
+  '/pregnancy/ask': typeof AuthenticatedPregnancyAskRoute
   '/girls': typeof AuthenticatedGirlsIndexRoute
 }
 export interface FileRoutesById {
@@ -104,13 +129,16 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
+  '/clinics': typeof ClinicsRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/girls': typeof AuthenticatedGirlsRouteWithChildren
   '/_authenticated/onboarding': typeof AuthenticatedOnboardingRoute
-  '/_authenticated/pregnancy': typeof AuthenticatedPregnancyRoute
+  '/_authenticated/pregnancy': typeof AuthenticatedPregnancyRouteWithChildren
+  '/_authenticated/girls/ask': typeof AuthenticatedGirlsAskRoute
   '/_authenticated/girls/check': typeof AuthenticatedGirlsCheckRoute
   '/_authenticated/girls/help': typeof AuthenticatedGirlsHelpRoute
   '/_authenticated/girls/learn': typeof AuthenticatedGirlsLearnRoute
+  '/_authenticated/pregnancy/ask': typeof AuthenticatedPregnancyAskRoute
   '/_authenticated/girls/': typeof AuthenticatedGirlsIndexRoute
 }
 export interface FileRouteTypes {
@@ -118,37 +146,46 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/auth'
+    | '/clinics'
     | '/dashboard'
     | '/girls'
     | '/onboarding'
     | '/pregnancy'
+    | '/girls/ask'
     | '/girls/check'
     | '/girls/help'
     | '/girls/learn'
+    | '/pregnancy/ask'
     | '/girls/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/auth'
+    | '/clinics'
     | '/dashboard'
     | '/onboarding'
     | '/pregnancy'
+    | '/girls/ask'
     | '/girls/check'
     | '/girls/help'
     | '/girls/learn'
+    | '/pregnancy/ask'
     | '/girls'
   id:
     | '__root__'
     | '/'
     | '/_authenticated'
     | '/auth'
+    | '/clinics'
     | '/_authenticated/dashboard'
     | '/_authenticated/girls'
     | '/_authenticated/onboarding'
     | '/_authenticated/pregnancy'
+    | '/_authenticated/girls/ask'
     | '/_authenticated/girls/check'
     | '/_authenticated/girls/help'
     | '/_authenticated/girls/learn'
+    | '/_authenticated/pregnancy/ask'
     | '/_authenticated/girls/'
   fileRoutesById: FileRoutesById
 }
@@ -156,10 +193,18 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
+  ClinicsRoute: typeof ClinicsRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/clinics': {
+      id: '/clinics'
+      path: '/clinics'
+      fullPath: '/clinics'
+      preLoaderRoute: typeof ClinicsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/auth': {
       id: '/auth'
       path: '/auth'
@@ -216,6 +261,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedGirlsIndexRouteImport
       parentRoute: typeof AuthenticatedGirlsRoute
     }
+    '/_authenticated/pregnancy/ask': {
+      id: '/_authenticated/pregnancy/ask'
+      path: '/ask'
+      fullPath: '/pregnancy/ask'
+      preLoaderRoute: typeof AuthenticatedPregnancyAskRouteImport
+      parentRoute: typeof AuthenticatedPregnancyRoute
+    }
     '/_authenticated/girls/learn': {
       id: '/_authenticated/girls/learn'
       path: '/learn'
@@ -237,10 +289,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedGirlsCheckRouteImport
       parentRoute: typeof AuthenticatedGirlsRoute
     }
+    '/_authenticated/girls/ask': {
+      id: '/_authenticated/girls/ask'
+      path: '/ask'
+      fullPath: '/girls/ask'
+      preLoaderRoute: typeof AuthenticatedGirlsAskRouteImport
+      parentRoute: typeof AuthenticatedGirlsRoute
+    }
   }
 }
 
 interface AuthenticatedGirlsRouteChildren {
+  AuthenticatedGirlsAskRoute: typeof AuthenticatedGirlsAskRoute
   AuthenticatedGirlsCheckRoute: typeof AuthenticatedGirlsCheckRoute
   AuthenticatedGirlsHelpRoute: typeof AuthenticatedGirlsHelpRoute
   AuthenticatedGirlsLearnRoute: typeof AuthenticatedGirlsLearnRoute
@@ -248,6 +308,7 @@ interface AuthenticatedGirlsRouteChildren {
 }
 
 const AuthenticatedGirlsRouteChildren: AuthenticatedGirlsRouteChildren = {
+  AuthenticatedGirlsAskRoute: AuthenticatedGirlsAskRoute,
   AuthenticatedGirlsCheckRoute: AuthenticatedGirlsCheckRoute,
   AuthenticatedGirlsHelpRoute: AuthenticatedGirlsHelpRoute,
   AuthenticatedGirlsLearnRoute: AuthenticatedGirlsLearnRoute,
@@ -257,18 +318,32 @@ const AuthenticatedGirlsRouteChildren: AuthenticatedGirlsRouteChildren = {
 const AuthenticatedGirlsRouteWithChildren =
   AuthenticatedGirlsRoute._addFileChildren(AuthenticatedGirlsRouteChildren)
 
+interface AuthenticatedPregnancyRouteChildren {
+  AuthenticatedPregnancyAskRoute: typeof AuthenticatedPregnancyAskRoute
+}
+
+const AuthenticatedPregnancyRouteChildren: AuthenticatedPregnancyRouteChildren =
+  {
+    AuthenticatedPregnancyAskRoute: AuthenticatedPregnancyAskRoute,
+  }
+
+const AuthenticatedPregnancyRouteWithChildren =
+  AuthenticatedPregnancyRoute._addFileChildren(
+    AuthenticatedPregnancyRouteChildren,
+  )
+
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedGirlsRoute: typeof AuthenticatedGirlsRouteWithChildren
   AuthenticatedOnboardingRoute: typeof AuthenticatedOnboardingRoute
-  AuthenticatedPregnancyRoute: typeof AuthenticatedPregnancyRoute
+  AuthenticatedPregnancyRoute: typeof AuthenticatedPregnancyRouteWithChildren
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedGirlsRoute: AuthenticatedGirlsRouteWithChildren,
   AuthenticatedOnboardingRoute: AuthenticatedOnboardingRoute,
-  AuthenticatedPregnancyRoute: AuthenticatedPregnancyRoute,
+  AuthenticatedPregnancyRoute: AuthenticatedPregnancyRouteWithChildren,
 }
 
 const AuthenticatedRouteRouteWithChildren =
@@ -278,17 +353,8 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
+  ClinicsRoute: ClinicsRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
