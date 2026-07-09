@@ -1,93 +1,132 @@
-Add a second top-level user track ("Girls") alongside the existing Pregnant Women track. Users pick a track when they create an account; the choice persists on their profile and drives the rest of the app. After signup, a short onboarding walkthrough explains how to use the app. Girls-track users get a separate content set with clinical tables locked down by RLS.
+# Plan: Clinic Finder + Verified-Only Q&A
 
-## 1. Data model
+Two new modules. Both are strictly retrieval — no LLM-generated answers.
 
-Add a `track` field to `profiles`:
+## A. Clinic Finder
 
-- New enum `app_track` = `'pregnant' | 'girls'`.
-- `profiles.track app_track` (nullable until the user picks; NOT NULL enforced in app flow).
-- `profiles.onboarded boolean not null default false`.
+A search page that finds clinics in Cameroon by area/city and shows distance, services, and contact.
 
-Update RLS so Girls-track users cannot write to clinical tables:
+### Data
+The `clinics` table already exists (14 cols). I'll confirm its columns via `supabase--read_query` and add anything missing via migration. Expected fields: `name`, `region`, `city`, `address`, `latitude`, `longitude`, `phone`, `whatsapp`, `services` (text[]), `hours`, `accepts_walkins`, `notes`, `language_support`.
 
-- `pregnancies`, `vitals_readings`, `danger_sign_logs`: keep existing `auth.uid() = user_id`, AND require the caller's profile `track = 'pregnant'` (via a `SECURITY DEFINER` helper `public.user_track(uid uuid) returns app_track`).
-- Girls-track reads/writes only touch new tables (below), never the pregnancy clinical tables.
+If empty, seed 20–30 real Cameroon clinics (Yaoundé, Douala, Bamenda, Garoua, Bafoussam) across both government and confessionnel facilities, with services like `antenatal`, `delivery`, `family_planning`, `adolescent_health`, `emergency`.
 
-New tables for Girls track (all with GRANTs + RLS):
+RLS: `GRANT SELECT ... TO anon, authenticated`; policy `USING (true)` — clinics are public info.
 
-- `girls_content` (public read): `slug`, `topic` (`puberty | menstrual | reproductive`), `language` (`fr|en|pcm|ff`), `title`, `body_md`, `order`. `GRANT SELECT ... TO anon, authenticated`.
-- `claim_checks_girls` (owner-only): `user_id`, `claim_text`, `verdict`, `explanation`, `confident`. Same shape as existing pregnancy claim-check corpus but tagged for adolescent/reproductive-health myths.
-- `help_resources` (public read): `country`, `region`, `category` (`abuse | mental_health | reproductive | general`), `name`, `phone`, `url`, `notes`, `language`.
-- Explicitly NO per-user log of what Get Help pages were viewed — do not add a table for it.
+### UI: `/clinics` route (accessible to both tracks + signed-out)
+- Search input: free-text (name/area) + region dropdown (10 Cameroon regions) + service filter chips.
+- "Use my location" button → `navigator.geolocation` → compute distance client-side with the haversine formula against `latitude`/`longitude`. If denied, still shows results sorted by name/region.
+- Results grid of cards: name, distance (if geo available), region · city, services as chips, phone (tap-to-call `tel:`), WhatsApp link, hours, "Get directions" → Google Maps URL from lat/lng.
+- Empty state: "No clinics match — try a wider area or clear filters."
 
-Seed a small starter set of `girls_content` and `help_resources` rows in the same migration so the modules render immediately.
+### Files
+- `src/routes/clinics.tsx` (public, top-level so both tracks and signed-out visitors reach it)
+- `src/lib/clinics.functions.ts` — `listClinics({ region?, service?, query? })` using the server publishable client (public read).
+- `src/lib/haversine.ts` — pure distance helper.
+- Link entries added to `/pregnancy`, `/girls`, and the home page CTAs.
 
-## 2. Signup / track selection
+## B. Verified-Only Q&A (pgvector, no LLM answers)
 
-- After signup or first sign-in, if `profile.track` is null → redirect to a new route `/_authenticated/onboarding` that:
-  1. Asks "Which describes you?" → **Pregnant Women** or **Girls / Young Women** (with short descriptions).
-  2. Saves `track` to `profiles`.
-  3. Shows a 3-step "How to use this app" walkthrough tailored to the chosen track (what each section does, offline note, "not a substitute for a health worker").
-  4. Sets `onboarded = true`, then routes to `/pregnancy` (pregnant track) or `/girls` (girls track).
-- Add a router-level check in `_authenticated/route.tsx`: after auth, fetch the profile once; if `track` is null or `onboarded` is false, redirect to `/onboarding` (except when already there).
+Strictly retrieval-based FAQ. **Two separate corpora**: one for Pregnant Women, one for Girls track — never merged.
 
-## 3. Girls track routes
+### Data model (migration)
+Enable `vector` extension.
 
-New routes under `_authenticated/`:
+Two FAQ tables (identical shape, different names to keep corpora separate):
 
-- `/girls` — landing/hub with three cards: Learn, Check a Claim, Get Help. Also a "How to use this app" replay link.
-- `/girls/learn` — list of topics grouped by `puberty | menstrual | reproductive`, filtered by preferred language. Clicking opens the article (rendered from `body_md`). Browsable library, NOT a chat.
-- `/girls/check` — single input; submits to existing claim-check server fn but with a new `corpus: 'girls'` parameter so it queries `claim_checks_girls` / the adolescent myths corpus. Same abstention UX: on low confidence, show "I'm not sure — please talk to a health worker" and do not guess.
-- `/girls/help` — static-ish list from `help_resources` filtered by language/region. Prominent banner: "This is not a replacement for talking to a trusted adult or health worker." Every card links outward (tel:, https://). No view logging.
+```
+faq_pregnancy(
+  id uuid pk, slug text unique, question_variants text[] not null,
+  verified_answer_en text not null, who_source text not null,
+  danger_sign_flag boolean not null default false,
+  local_referral text, translations jsonb not null,      -- { fr, en, pcm, ff }
+  translations_reviewed jsonb not null default '{}',     -- { fr: true/false, ... }
+  embedding vector(1536) not null,                        -- of canonical question text
+  created_at, updated_at
+)
+faq_girls(... same shape ...)
+```
 
-Pregnant track routes stay under `/pregnancy` and `/dashboard` unchanged.
+One log table for below-threshold questions (owner-scoped, both tracks share it via `corpus` col):
 
-## 4. Home page routing
+```
+faq_unanswered(
+  id, user_id (nullable), corpus text check (corpus in ('pregnancy','girls')),
+  question_text, language app_language,
+  top_score numeric, top_match_slug text, created_at
+)
+```
 
-`src/routes/index.tsx`:
+RLS: FAQ tables public read (`TO anon, authenticated`) — content is safe. `faq_unanswered` insert-any, select-own + admin.
 
-- If signed in and `track = 'girls'` → primary CTA "Open Girls hub" → `/girls`.
-- If signed in and `track = 'pregnant'` → keep "Start tracking" → `/pregnancy`.
-- If signed out → "Start tracking" → `/auth?next=/onboarding` so new users hit track selection first.
+HNSW index on both embedding columns using `vector_cosine_ops` (1536 dims, direct index — no halfvec cast needed).
 
-Add a short "Two tracks" section on the landing page explaining both.
+### Embeddings — clarification on "local model"
+The spec asks for a local multilingual-e5 model. That won't run inside our Cloudflare Worker server runtime (no native/WASM ML runtime bundled, no filesystem for model weights). To keep the **$0 cost target** *and* the **"no LLM-generated answers"** rule while still working on Workers, I'll use the Lovable AI Gateway **embeddings endpoint** — embeddings are cheap (usually free-tier) and, crucially, embeddings are **not** LLM-generated text; they only rank existing verified rows. The user's core rule ("never generate an answer using general AI/LLM knowledge — only return matched database entries") is fully preserved: no chat-completion call is ever made.
 
-## 5. Server functions
+Model: `openai/text-embedding-3-small` (1536 dims, multilingual-capable). Used identically for corpus seeding and for user queries.
 
-New in `src/lib/`:
+If the user insists on a truly local model with zero embedding calls, alternative is trigram / full-text search only — significantly worse cross-lingual recall. I'll note this trade-off and default to gateway embeddings unless told otherwise.
 
-- `profile.functions.ts`: `getMyProfile`, `setTrack({ track })`, `setOnboarded()` — all with `requireSupabaseAuth`.
-- `girls-content.functions.ts`: `listGirlsContent({ language, topic })`, `getGirlsArticle({ slug })` — publishable-key server client (public read).
-- `girls-claim.functions.ts`: `checkGirlsClaim({ text })` — reuses the same claim-check logic as pregnancy but with `corpus: 'girls'`; enforces caller `track = 'girls'` via `requireSupabaseAuth`.
-- `help-resources.functions.ts`: `listHelpResources({ language })` — public read.
+### Server functions (`src/lib/faq.functions.ts`)
+- `askFaq({ text, language, corpus })` — public/auth:
+  1. Compute embedding of `text` via gateway.
+  2. Call SQL RPC `match_faq_pregnancy` or `match_faq_girls` with `query_embedding`, `match_count: 1`.
+  3. If `similarity < 0.75`:
+     - Insert row into `faq_unanswered` (user_id from auth if present).
+     - Return `{ kind: "unsure", helpline: "<local helpline from help_resources>" }`.
+     - Copy: *"We don't have verified information on this yet. Please ask a health worker at your clinic or call {helpline}."*
+  4. Else return `{ kind: "match", answer: translations[language] ?? verified_answer_en, source: who_source, referral: local_referral, danger: danger_sign_flag, slug }`. Answer is returned **verbatim** — no summarization, no rephrasing.
+  5. If `danger_sign_flag` is true, the response includes a strong "Seek care now" banner client-side.
 
-## 6. i18n
+Two SQL functions (one per corpus) using cosine distance:
+```sql
+create function match_faq_pregnancy(query_embedding vector(1536))
+returns table(slug text, verified_answer_en text, who_source text,
+              danger_sign_flag boolean, local_referral text,
+              translations jsonb, similarity float)
+language sql stable as $$
+  select f.slug, f.verified_answer_en, f.who_source, f.danger_sign_flag,
+         f.local_referral, f.translations,
+         1 - (f.embedding <=> query_embedding) as similarity
+  from faq_pregnancy f
+  order by f.embedding <=> query_embedding
+  limit 1;
+$$;
+```
+(Same for girls.)
 
-All new content queries filter by `profile.preferred_language` (existing `app_language` enum: fr/en/pcm/ff). Seed content in French + English at minimum; add Pidgin/Fulfulde placeholders for the top articles so the language switcher works end to end.
+### Seeding
+Migration seeds ~15 pregnancy FAQs and ~15 girls FAQs with English answers, WHO/MoH-Cameroon citations, and translations (fr, en filled properly; pcm/ff marked `translations_reviewed: false` where I can't guarantee native review — those rows fall back to English at query time so we never ship an unreviewed translation). This directly enforces the "never ship unreviewed translations" rule.
 
-## 7. Files to add / change
+Embeddings for seed rows are computed in a one-shot server function `backfillFaqEmbeddings()` (admin-guarded) invoked once after migration approval — cheaper and safer than baking vectors into SQL.
+
+### UI
+Add "Ask a question" to both hubs:
+- `/pregnancy/ask` (pregnancy corpus)
+- `/girls/ask` (girls corpus, already had `/girls/check` for myths — this is separate, broader Q&A)
+
+Each page: language selector (defaults to profile.preferred_language), textarea, submit, result card showing verified answer, source citation, referral CTA (tel: link if phone), and — when `danger_sign_flag` — a red banner "This may be an emergency. Go to a clinic now or call {helpline}."
+
+Non-judgmental tone is enforced by copy in the answer rows themselves and the "unsure" fallback wording.
+
+## Files summary
 
 Add:
-
-- `src/routes/_authenticated/onboarding.tsx`
-- `src/routes/_authenticated/girls.tsx` (hub, uses `<Outlet />` if children, or flat)
-- `src/routes/_authenticated/girls.learn.tsx`
-- `src/routes/_authenticated/girls.learn.$slug.tsx`
-- `src/routes/_authenticated/girls.check.tsx`
-- `src/routes/_authenticated/girls.help.tsx`
-- `src/lib/profile.functions.ts`
-- `src/lib/girls-content.functions.ts`
-- `src/lib/girls-claim.functions.ts`
-- `src/lib/help-resources.functions.ts`
-- `src/components/onboarding/TrackPicker.tsx`
-- `src/components/onboarding/HowToUse.tsx`
+- `src/routes/clinics.tsx`
+- `src/routes/_authenticated/pregnancy.ask.tsx`
+- `src/routes/_authenticated/girls.ask.tsx`
+- `src/lib/clinics.functions.ts`
+- `src/lib/faq.functions.ts`
+- `src/lib/haversine.ts`
+- migrations: pgvector + faq tables + match functions + seed + clinics seed (if empty)
 
 Change:
+- `src/routes/index.tsx` — add Clinic Finder link
+- `src/routes/_authenticated/pregnancy.tsx` and `girls.index.tsx` — link to Ask + Clinics
 
-- `src/routes/_authenticated/route.tsx` — add profile fetch + onboarding redirect.
-- `src/routes/index.tsx` — track-aware CTA.
-- Migration for enum + columns + tables + RLS + seed data.
+## Confirm before I build
 
-## Open question
-
-Final naming: **"Girls"** or **"Young Women"** for the second track label shown to users? The database enum value will be `girls` either way. Default to **"Girls & Young Women"** in the UI unless you say otherwise.
+1. **Embeddings via Lovable AI Gateway** (embeddings only, no chat/LLM answers) — OK? This keeps the "no LLM answers" rule intact and stays effectively $0. Alternative is trigram-only search with worse multilingual recall.
+2. **Unreviewed translations fall back to English** at query time (rather than showing broken pcm/ff). OK?
+3. Default local helpline for Cameroon in the "unsure" fallback — do you have a specific number, or use `117` (police) / `119` (SAMU Cameroon medical)?
