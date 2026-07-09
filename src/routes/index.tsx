@@ -216,6 +216,13 @@ function Hero({
                 </Button>
               )}
             </div>
+
+            <Link
+              to="/clinics"
+              className="inline-flex w-fit items-center gap-1 text-sm font-semibold text-accent underline-offset-4 hover:underline"
+            >
+              Find a clinic near you →
+            </Link>
           </div>
 
           <div className="grid grid-cols-2 gap-6 border-t border-border pt-8">
